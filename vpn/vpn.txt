@@ -30,11 +30,11 @@ iptables -t mangle -A OpenVPN -p tcp -m comment --comment "Restore the Openvpn M
 
 iptables -t mangle -A OpenVPN -p tcp -m conntrack --ctstate ESTABLISHED -m connmark ! --mark 1 -j CONNMARK --set-mark 99
 iptables -t mangle -A OpenVPN -p tcp -m comment --comment "Drop the bad traffic" -m connmark --mark 99 -j DROP
-iptables -t mangle -A OpenVPN -p tcp -m comment --comment "Flag IPs exceeding connlimit" -m connlimit --connlimit-above 1 --connlimit-mask 24 -j SET --add-set banned_ips src
-iptables -t mangle -A OpenVPN -p tcp -m conntrack --ctstate NEW -m hashlimit --hashlimit-name dropStuff --hashlimit-mode srcip --hashlimit-srcmask 24 --hashlimit-above 1/s --hashlimit-burst 3 --hashlimit-htable-expire 256000 --hashlimit-htable-size 9999999 --hashlimit-htable-max 9999999 -j DROP
+iptables -t mangle -A OpenVPN -p tcp -m comment --comment "Flag IPs exceeding connlimit" -m connlimit --connlimit-above 30 --connlimit-mask 24 -j SET --add-set banned_ips src
+iptables -t mangle -A OpenVPN -p tcp -m conntrack --ctstate NEW -m hashlimit --hashlimit-name dropStuff --hashlimit-mode srcip --hashlimit-srcmask 24 --hashlimit-above 50/s --hashlimit-burst 25 --hashlimit-htable-expire 256000 --hashlimit-htable-size 9999999 --hashlimit-htable-max 9999999 -j DROP
 iptables -t mangle -A OpenVPN -p tcp -m conntrack --ctstate ESTABLISHED -m connmark --mark 1 -j ACCEPT
 iptables -t mangle -A OpenVPN -p tcp -m conntrack --ctstate RELATED -j ACCEPT
-iptables -t mangle -A OpenVPN -p tcp --syn -m conntrack --ctstate NEW -m mark --mark 0 -m hashlimit --hashlimit-name portlimit --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-upto 1/m --hashlimit-burst 1 --hashlimit-htable-expire 256000 --hashlimit-htable-size 817281921 --hashlimit-htable-max 9999999 -j ACCEPT
+iptables -t mangle -A OpenVPN -p tcp --syn -m conntrack --ctstate NEW -m mark --mark 0 -m hashlimit --hashlimit-name portlimit --hashlimit-mode srcip --hashlimit-srcmask 32 --hashlimit-upto 5/m --hashlimit-burst 1 --hashlimit-htable-expire 256000 --hashlimit-htable-size 817281921 --hashlimit-htable-max 9999999 -j ACCEPT
 iptables -t mangle -A OpenVPN -j DROP
 # Allow specific internal network traffic
 iptables -A INPUT -s 10.8.0.0/24 -d 10.8.0.1 -p tcp -m conntrack --ctstate NEW --dport 22 --syn -m limit --limit 1/sec -j ACCEPT
